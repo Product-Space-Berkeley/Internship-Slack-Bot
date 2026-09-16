@@ -3,6 +3,10 @@ name: Reset bot (delete messages)
 on:
   workflow_dispatch: {}
 
+concurrency:
+  group: slack-bot-state
+  cancel-in-progress: false
+
 permissions:
   contents: write
 

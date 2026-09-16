@@ -76,3 +76,31 @@ category posted as a thread reply. After that, only new postings will show up.
   listings instead of posting them.
 - **Free-tier note**: GitHub Actions gives 2,000 free minutes/month on public repos (unlimited) and
   private repos; this job takes a few seconds per run, so frequency isn't a real constraint.
+
+
+## Add new-grad listings using the same Slack bot
+
+The same Slack app/token can serve both channels. The new-grad feed reads
+[SimplifyJobs/New-Grad-Positions](https://github.com/SimplifyJobs/New-Grad-Positions)
+and uses the existing SWE, PM, and Data Science/AI/ML categories, company allowlist,
+🔥 filter, message formatting, and two-hour schedule.
+
+1. Create the new Slack channel (for example, `#new-grad-jobs`).
+2. Invite the **existing bot** to that channel. No new app or token is needed.
+3. Copy the channel ID from its channel details.
+4. In this GitHub repository's Actions secrets, add `SLACK_NEW_GRAD_CHANNEL_ID`
+   with that ID. Keep the existing `SLACK_BOT_TOKEN` and `SLACK_CHANNEL_ID`.
+5. Merge/deploy this change to the default branch, then run **Post new PM internships
+   to Slack** from Actions, or wait for the next scheduled run.
+
+Until the new channel secret is set, the workflow skips the new-grad feed.
+`state-new-grad.json` tracks new-grad posting history separately from `state.json`.
+The first run posts all currently matching listings; subsequent runs post only new
+listings, with a new parent thread per category that has updates on that run.
+The cleanup workflow still targets only the original internship channel.
+
+Preview locally without sending messages or changing posting history:
+
+```sh
+JOB_FEED=new_grad DRY_RUN=1 python3 scraper.py
+```
