@@ -2,9 +2,13 @@ name: Post new PM internships to Slack
 
 on:
   schedule:
-    # Every 6 hours. Edit this cron to change frequency (cron is UTC).
+    # Every 2 hours. Edit this cron to change frequency (cron is UTC).
     - cron: "0 */2 * * *"
   workflow_dispatch: {}  # lets you trigger a run manually from the Actions tab
+
+concurrency:
+  group: slack-bot-state
+  cancel-in-progress: false
 
 permissions:
   contents: write  # needed so the workflow can commit the updated state.json
@@ -25,10 +29,23 @@ jobs:
           SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
         run: python scraper.py
 
+      - name: Run new-grad scraper
+        env:
+          JOB_FEED: new_grad
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_NEW_GRAD_CHANNEL_ID: ${{ secrets.SLACK_NEW_GRAD_CHANNEL_ID }}
+        run: |
+          if [ -n "$SLACK_NEW_GRAD_CHANNEL_ID" ]; then
+            python scraper.py
+          else
+            echo "New-grad feed is disabled: set SLACK_NEW_GRAD_CHANNEL_ID to enable it."
+          fi
+
       - name: Commit updated state
+        if: always()
         run: |
           git config user.name "pm-internship-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add state.json
+          git add state.json state-new-grad.json
           git diff --staged --quiet || git commit -m "Update posted listings state"
           git push

@@ -35,6 +35,10 @@ import time
 import urllib.request
 import urllib.error
 
+FEED = os.environ.get("JOB_FEED", "internships")
+if FEED not in {"internships", "new_grad"}:
+    raise ValueError("JOB_FEED must be internships or new_grad")
+
 README_URL = "https://raw.githubusercontent.com/SimplifyJobs/Summer2027-Internships/dev/README.md"
 STATE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "state.json")
 
@@ -79,6 +83,26 @@ CATEGORIES = [
     # {"slug": "quant_finance", "heading": "Quantitative Finance Internship Roles", "parent_texts": ["..."]},
     # {"slug": "hardware_engineering", "heading": "Hardware Engineering Internship Roles", "parent_texts": ["..."]},
 ]
+
+# Reuse the same parser, filters, and Slack identity with independent feed state.
+if FEED == "new_grad":
+    README_URL = "https://raw.githubusercontent.com/SimplifyJobs/New-Grad-Positions/dev/README.md"
+    STATE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "state-new-grad.json")
+    CATEGORIES = [
+        {
+            **category,
+            "heading": category["heading"].replace("Internship Roles", "New Grad Roles"),
+            "parent_texts": [
+                text.replace("internships", "new-grad roles")
+                    .replace("internship", "new-grad")
+                    .replace("new SWE roles", "new SWE new-grad roles")
+                    .replace("new PM roles", "new PM new-grad roles")
+                    .replace("new AI/ML roles", "new AI/ML new-grad roles")
+                for text in category["parent_texts"]
+            ],
+        }
+        for category in CATEGORIES
+    ]
 
 # Only post roles from these companies OR roles marked 🔥 in the repo.
 # Matching is case-insensitive substring: "Google" matches "Google LLC", etc.
@@ -375,11 +399,12 @@ def format_listing(listing: dict) -> str:
 
 def main():
     token = os.environ.get("SLACK_BOT_TOKEN")
-    channel = os.environ.get("SLACK_CHANNEL_ID")
+    channel_key = "SLACK_NEW_GRAD_CHANNEL_ID" if FEED == "new_grad" else "SLACK_CHANNEL_ID"
+    channel = os.environ.get(channel_key)
     dry_run = os.environ.get("DRY_RUN") == "1"
 
     if not dry_run and (not token or not channel):
-        print("SLACK_BOT_TOKEN and SLACK_CHANNEL_ID must be set (or set DRY_RUN=1).", file=sys.stderr)
+        print(f"SLACK_BOT_TOKEN and {channel_key} must be set (or set DRY_RUN=1).", file=sys.stderr)
         sys.exit(1)
 
     readme = fetch_readme()
