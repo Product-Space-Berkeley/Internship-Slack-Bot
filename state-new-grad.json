@@ -167,19 +167,20 @@
     },
     "product_management": {
       "posted_ids": [
-        "b3ef442fd0902766",
-        "c0c8a9a5deb971cc",
         "0715fb6297739e85",
-        "732546e02dea4698",
-        "d5e433d807f58a97",
-        "97bc3433c5ba6565",
         "396bf3c4f7f571fc",
+        "732546e02dea4698",
+        "97bc3433c5ba6565",
         "c3df813292a37e45",
-        "204060453aa3312d",
         "9dcc664e97c8b7ec",
-        "a94fc01a6098bb23",
         "0ed478b3d94f32e2",
-        "14cfaa3c7c967590"
+        "15cee2e3fdec0ecd",
+        "d5e433d807f58a97",
+        "a94fc01a6098bb23",
+        "c0c8a9a5deb971cc",
+        "14cfaa3c7c967590",
+        "b3ef442fd0902766",
+        "204060453aa3312d"
       ]
     },
     "data_science_ai_ml": {
